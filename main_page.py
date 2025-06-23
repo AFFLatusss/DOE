@@ -8,7 +8,7 @@ st.markdown("# Design of Experiment(DOE) 🎈")
 st.sidebar.markdown("# Design of Experiment 🎈")
 
 doe_type = st.radio("Select DOE type", 
-                 ["Full Factorial Design(General)", "Full Factorial Design(2-Level)",
+                 ["Full Factorial Design(General)",
                   "Fractional Factorial Design", "Plackett-Burman Design",
                   "Box-Behnken Design", "Central Composite Design", "Mixture Design "],
                  index=0)
@@ -78,17 +78,17 @@ match doe_type:
                 mapped_design[:, col_idx] = [levels[int(code)] for code in coded_design[:, col_idx]]
 
             mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
-            st.dataframe(mapped_df)
-        
+
+            for i in range(edited_df["No. of Replicates:"].iloc[0] -1):
+                mapped_df = pd.concat([mapped_df, mapped_df.copy()], ignore_index=True)
+
+            final_df = st.dataframe(mapped_df)
+
+            
 
 
 
 
-
-
-
-    case "Full Factorial Design(2-Level)":
-        st.write("Full Factorial Design with 2 levels is a specific case where each factor has two levels (e.g., low and high).")
     case "Fractional Factorial Design":
         st.write("Fractional Factorial Design is used to reduce the number of experiments while still providing insights into the effects of factors.")
     case "Plackett-Burman Design":
