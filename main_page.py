@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from streamlit import column_config
+from pyDOE2 import *
 
 # Main page content
 st.markdown("# Design of Experiment(DOE) 🎈")
@@ -62,10 +63,23 @@ match doe_type:
                 st.error(f"Number of level values for Factor {i+1} does not match the number of levels. Please correct it.")
                 break
 
+        if st.button("Generate Factorial Design"):
         # Generate the full factorial design
+            Levels = ff_editor["Levels"].tolist()
+            Level_values = [val.split(',') for val in ff_editor["Level Values"].tolist()]
 
+
+            print(Level_values)
+            coded_design = fullfact(Levels)
+
+            mapped_design = np.empty_like(coded_design, dtype=object)
+
+            for col_idx, levels in enumerate(Level_values):
+                mapped_design[:, col_idx] = [levels[int(code)] for code in coded_design[:, col_idx]]
+
+            mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
+            st.dataframe(mapped_df)
         
-    
 
 
 
