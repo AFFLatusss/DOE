@@ -21,27 +21,25 @@ st.write("You selected:", doe_type)
 # Display additional information based on the selected DOE type
 match doe_type:
     case "Full Factorial Design(General)":
-        df = pd.DataFrame(
-            [{"NO. of Factors:": 2 , "No. of Replicates:": 1, "No. of Blocks:": 1}]
-        )
-        edited_df = st.data_editor(df)
 
-        if edited_df["NO. of Factors:"].iloc[0] <= 1:
-            st.error("Number of factors must be at least 2.")
-        if edited_df["No. of Replicates:"].iloc[0] < 1:
-            st.error("Number of replicates must be at least 1.")
-        if edited_df["No. of Blocks:"].iloc[0] < 1:
-            st.error("Number of blocks must be at least 1.")
 
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            num_factor = st.number_input("NO. of Factors", min_value=2, step=1)
+        with col2:
+            num_replicates = st.number_input("NO. of Replicates", min_value=1, step=1)
+        with col3:
+            num_blocks = st.number_input("NO. of Blocks", min_value=1, step=1)
         # title = st.text_input("Level Values(Separated by comma ',')", "-1,1")
         # st.write("The current movie title is", title)
 
-        n_factors = int(edited_df["NO. of Factors:"].iloc[0])
-        default_levels = [2] * n_factors
+        # n_factors = int(edited_df["NO. of Factors:"].iloc[0])
+        default_levels = [2] * num_factor
         default_level_values = [[i for i in range(lvl)] for lvl in default_levels]
 
         ff_df = pd.DataFrame({
-            "Factor": [f'Factor {i+1}' for i in range(n_factors)],
+            "Factor": [f'Factor {i+1}' for i in range(num_factor)],
             "Levels": default_levels,
             "Level Values": [",".join(map(str, range(lvl))) for lvl in default_levels]
         })
@@ -79,12 +77,10 @@ match doe_type:
 
             mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
 
-            for i in range(edited_df["No. of Replicates:"].iloc[0] -1):
+            for i in range(num_replicates -1):
                 mapped_df = pd.concat([mapped_df, mapped_df.copy()], ignore_index=True)
 
             final_df = st.dataframe(mapped_df)
-
-            
 
 
 
