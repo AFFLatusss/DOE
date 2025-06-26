@@ -27,7 +27,7 @@ def render():
                 "Low": column_config.NumberColumn("Low", help="Must be a number", step=1),
                 "High": column_config.NumberColumn("High", help="Must be a number", step=1)
             },
-            use_container_width=True
+            use_container_width=True, hide_index=True
         )
 
 

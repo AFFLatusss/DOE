@@ -36,7 +36,7 @@ def render():
                     step=1
                 )
             },
-            use_container_width=True
+            use_container_width=True, hide_index=True
         )
 
     # check if the user has provided valid levels
@@ -51,7 +51,6 @@ def render():
         Level_values = [val.split(',') for val in ff_editor["Level Values"].tolist()]
 
 
-        print(Level_values)
         coded_design = fullfact(Levels)
 
         mapped_design = np.empty_like(coded_design, dtype=object)
@@ -60,8 +59,13 @@ def render():
             mapped_design[:, col_idx] = [levels[int(code)] for code in coded_design[:, col_idx]]
 
         mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
-
+        mapped_df.insert(0, "Run Order", range(1, len(mapped_df) + 1))        
         for i in range(num_replicates -1):
             mapped_df = pd.concat([mapped_df, mapped_df.copy()], ignore_index=True)
 
-        final_df = st.dataframe(mapped_df)
+        final_df = st.dataframe(mapped_df, hide_index=True,
+                                column_config={
+                                    "Run Order": column_config.Column(
+                                        width="small",
+                                    )
+                                },)
