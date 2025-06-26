@@ -17,16 +17,6 @@ def render():
     with col3:
         num_center_point = st.number_input("NO. of Center Points", min_value=0, step=1)
 
-
-    # n_factors = int(edited_df["NO. of Factors:"].iloc[0])
-    default_levels = [2] * num_factor
-
-    # ff_df = pd.DataFrame({
-    #     "Factor": [f'Factor {i+1}' for i in range(num_factor)],
-    #     "Levels": default_levels,
-    #     "Level Values": [",".join(map(str, range(lvl))) for lvl in default_levels]
-    # })
-
     ff_df = pd.DataFrame({
             "Factor": [f'Factor {i+1}' for i in range(num_factor)],
             "Low": [-1]* num_factor,
@@ -34,39 +24,43 @@ def render():
         })
     
     ff_editor = st.data_editor(ff_df,column_config={
-                "Low": column_config.NumberColumn(
-                    "Low",
-                    help="Must be a number",
-                    step=1
-                ),
-                "High": column_config.NumberColumn(
-                    "High",
-                    help="Must be a number",
-                    step=1
-                )
+                "Low": column_config.NumberColumn("Low", help="Must be a number", step=1),
+                "High": column_config.NumberColumn("High", help="Must be a number", step=1)
             },
             use_container_width=True
         )
 
-    # check if the user has provided valid levels
-    for i in range(len(ff_editor)):
-        if len(ff_editor.loc[i, "Level Values"].split(",")) != ff_editor.loc[i, "Levels"]:
-            st.error(f"Number of level values for Factor {i+1} does not match the number of levels. Please correct it.")
-            break
 
     if st.button("Generate Factorial Design"):
-    # Generate the full factorial design
-
+        # Validate Low < High
+        for i in range(num_factor):
+            if ff_editor.loc[i, "Low"] >= ff_editor.loc[i, "High"]:
+                st.error(f"❌ Factor {i+1}: Low must be less than High.")
+                return
+            
+        # Generate the pb design
         coded_design = pbdesign(num_factor)
+        coded = {-1: "Low", 1: "High"}
+
 
         mapped_design = np.empty_like(coded_design, dtype=object)
 
-        for col_idx, levels in enumerate(Level_values):
-            mapped_design[:, col_idx] = [levels[int(code)] for code in coded_design[:, col_idx]]
+        for col_idx in range(num_factor):
+            mapped_design[:, col_idx] = [ff_editor.loc[col_idx,coded[code]] for code in coded_design[:, col_idx]]
 
         mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
 
-        for i in range(num_replicates -1):
-            mapped_df = pd.concat([mapped_df, mapped_df.copy()], ignore_index=True)
+
+        if num_replicates > 1:
+            mapped_df = pd.concat([mapped_df] * num_replicates, ignore_index=True)
+
+        # Optionally add center points commneted for now
+        # if num_center_point > 0:
+        #     center_row = {
+        #         factor: (ff_editor.loc[i, "Low"] + ff_editor.loc[i, "High"]) / 2
+        #         for i, factor in enumerate(ff_editor["Factor"])
+        #     }
+        #     center_df = pd.DataFrame([center_row] * num_center_point)
+        #     mapped_df = pd.concat([mapped_df, center_df], ignore_index=True)
 
         st.dataframe(mapped_df)
