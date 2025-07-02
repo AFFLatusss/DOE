@@ -36,9 +36,6 @@ def render():
             
         # Generate the pb design
         coded_design = bbdesign(num_factor, num_center_point)
-        print(coded_design)
-        # coded = {-1: "Low", 1: "High"}
-
 
         mapped_design = np.empty_like(coded_design, dtype=object)
 
@@ -56,13 +53,9 @@ def render():
                     mapped_design[row_idx, col_idx] = center
 
 
-
-
         mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
-
 
         if num_replicates > 1:
             mapped_df = pd.concat([mapped_df] * num_replicates, ignore_index=True)
-
 
         st.dataframe(mapped_df)
