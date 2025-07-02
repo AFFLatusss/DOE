@@ -2,7 +2,7 @@
 import streamlit as st
 import pandas as pd
 from streamlit import column_config
-from pyDOE2 import *
+from pyDOE3 import *
 
 
 def render():
