@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 from streamlit import column_config
 from pyDOE3 import *
+import numpy as np
 
 
 def render():
