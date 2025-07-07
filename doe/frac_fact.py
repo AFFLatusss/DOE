@@ -82,11 +82,11 @@ def render():
     with col2:
         num_replicates = st.number_input("NO. of Replicates", min_value=1, step=1)
 
-    num_factors = int(options[num_runs_resolution].split()[1])
+    num_factor = int(options[num_runs_resolution].split()[1])
     ff_df = pd.DataFrame({
-        "Factor": [f'Factor {i+1}' for i in range(num_factors)],
-        "Low": [-1.0] * num_factors,
-        "High": [1.0] * num_factors,})
+        "Factor": [f'Factor {i+1}' for i in range(num_factor)],
+        "Low": [-1.0] * num_factor,
+        "High": [1.0] * num_factor,})
     
     ff_editor = st.data_editor(ff_df, hide_index=True)
 
@@ -95,24 +95,24 @@ def render():
             coded_design = fracfact(generator[num_runs_resolution][1])
             
         else:
-            coded_design = ff2n(num_factors)
+            coded_design = ff2n(num_factor)
 
 
         coded = {-1: "Low", 1: "High"}
         mapped_design = np.empty_like(coded_design, dtype=object)
 
-        for col_idx in range(num_factors):
+        for col_idx in range(num_factor):
             mapped_design[:, col_idx] = [ff_editor.loc[col_idx,coded[code]] for code in coded_design[:, col_idx]]
 
         mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
 
-        for i in range(num_replicates-1):
-            mapped_df = pd.concat([mapped_df, mapped_df.copy()], ignore_index=True)
+        if num_replicates > 1:
+            mapped_df = pd.concat([mapped_df] * num_replicates, ignore_index=True)
 
         for j in range(num_center_point):
             new_row = [
                         (ff_editor.loc[k, "Low"] + ff_editor.loc[k, "High"]) / 2
-                        for k in range(num_factors)
+                        for k in range(num_factor)
                     ]
             mapped_df = pd.concat([mapped_df, pd.DataFrame([new_row], columns=ff_editor["Factor"].tolist())], ignore_index=True)
 

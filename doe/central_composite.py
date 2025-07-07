@@ -55,4 +55,11 @@ def render():
         if num_replicates > 1:
             mapped_df = pd.concat([mapped_df] * num_replicates, ignore_index=True)
 
+        for j in range(num_center_point):
+            new_row = [
+                        (ff_editor.loc[k, "Low"] + ff_editor.loc[k, "High"]) / 2
+                        for k in range(num_factor)
+                    ]
+            mapped_df = pd.concat([mapped_df, pd.DataFrame([new_row], columns=ff_editor["Factor"].tolist())], ignore_index=True)
+
         st.dataframe(mapped_df)
