@@ -4,6 +4,31 @@ import pandas as pd
 import itertools
 import numpy as np
 
+
+
+    # -----------------------
+    # Simplex-Centroid Design
+    # -----------------------
+def generate_simplex_centroid(k):
+    all_points = []
+
+    # Loop from 1 component up to k components at a time
+    for i in range(1, k + 1):
+        for combo in itertools.combinations(range(k), i):
+            point = [0.0] * k
+            for j in combo:
+                point[j] = 1.0 / i
+            all_points.append(point)
+
+    return all_points
+
+def generate_simplex_lattice(k, m):
+
+    levels = [i / m for i in range(m + 1)]  # Discrete steps from 0 to 1
+    grid = list(itertools.product(levels, repeat=k))  # All combinations
+    valid_points = [pt for pt in grid if abs(sum(pt) - 1.0) < 1e-6]  # Keep only those summing to 1
+    return valid_points
+
 def render():
 
     # design_type = st.selectbox("Design Type", ["Simplex-Centroid", "Simplex-Lattice"])
@@ -21,7 +46,7 @@ def render():
         cols = st.columns(num_cols)
 
         with cols[0]:
-            num_factor = st.number_input("NO. of Factors", min_value=3, step=1)
+            num_factor = st.number_input("NO. of Factors", min_value=2, step=1)
         with cols[1]:
             num_replicates = st.number_input("NO. of Replicates", min_value=1, step=1)
         with cols[2]:
@@ -38,27 +63,14 @@ def render():
             "Lower Bounds": [-1] * num_factor,
             "High Bounds": [1] * num_factor,
             })
+    
+        ff_editor = st.data_editor(ff_df, hide_index=True)
 
 
 
         component_names = [f"Factor {i+1}" for i in range(num_factor)]
 
-        # -----------------------
-        # Simplex-Centroid Design
-        # -----------------------
-        def generate_centroid_design(n):
-            def compositions(n, k):
-                """All compositions of n into k parts"""
-                return [p for p in itertools.combinations_with_replacement(range(k), n)]
 
-            all_points = []
-            for i in range(1, n+1):
-                for combo in itertools.combinations(range(n), i):
-                    point = [0.0] * n
-                    for j in combo:
-                        point[j] = 1.0 / i
-                    all_points.append(point)
-            return pd.DataFrame(all_points, columns=component_names)
 
         # ---------------------
         # Simplex-Lattice Design
@@ -74,9 +86,11 @@ def render():
         # Generate Design
         # -----------------------
         if selection[0] == "Simplex-Centroid":
-            design_df = generate_centroid_design(num_factor)
+            design_df = generate_simplex_centroid(num_factor)
         elif selection[0] == "Simplex-Lattice":
-            design_df = generate_lattice_design(num_factor, m)
+            design_df = generate_lattice_design(num_factor, lattice_degree)
+        elif selection[0] == "Extreme-Vertices":
+            pass
 
         st.subheader("📋 Design Points")
         st.dataframe(design_df)
