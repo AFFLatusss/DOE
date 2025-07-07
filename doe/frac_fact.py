@@ -1,6 +1,7 @@
 
 import streamlit as st
 import pandas as pd
+from pyDOE3 import fracfact, fracfact_by_res
 
 options = {1:"2 Factors | 4 runs | Resolution Full",
            2:"3 Factors | 4 runs | Resolution III",
@@ -35,35 +36,32 @@ options = {1:"2 Factors | 4 runs | Resolution Full",
            31:"12 Factors | 64 runs | Resolution IV",}
 
 generator = {
-    2:"C=AB",
-    4:"D=ABC",
-    6:"D=AB, E=AC",
-    7:"E=ABCD",
-    9:"D=AB, E=AC, F=BC",
-    10:"E=AB, F=AC",
-    11:"F=ABCDE",
-    13:"D=AB, E=AC, F=BC, G=ABC",
-    14:"E=AB, F=AC, G=AD",
-    15:"F=AB, G=AC",
-    16:"G=ABCDEF",
-    17:"E=AB, F=AC, G=AD, H=BC",
-    18:"F=AB, G=AC, H=AD",
-    19:"G=AB, H=AC",
-    17:"E=AB, F=AC, G=AD, H=BC, I=BD",
-    18:"F=AB, G=AC, H=AD, I=AE",
-    19:"G=AB, H=AC, I=AD",
-    20:"E=AB, F=AC, G=AD, H=BC, I=BD",
-    21:"F=AB, G=AC, H=AD, I=AE",
-    22:"G=AB, H=AC, I=AD",
-    23:"E=AB, F=AC, G=AD, H=BC, I=BD, J=CD",
-    24:"F=AB, G=AC, H=AD, I=AE, J=BC",
-    25:"G=AB, H=AC, I=AD, J=AE",
-    26:"E=AB, F=AC, G=AD, H=BC, I=BD, J=CD, K=ABC",
-    27:"F=AB, G=AC, H=AD, I=AE, J=BC, K=BD",
-    28:"G=AB, H=AC, I=AD, J=AE, K=AF",
-    29:"E=AB, F=AC, G=AD, H=BC, I=BD, J=CD, K=ABC, L=ABD",
-    30:"F=AB, G=AC, H=AD, I=AE, J=BC, K=BD, L=BE",
-    31:"G=AB, H=AC, I=AD, J=AE, K=AF, L=BC"
+    2:["C=AB", "a b ab"],
+    4:["D=ABC", "a b c abc"],
+    6:["D=AB, E=AC", "a b c ab ac"],
+    7:["E=ABCD", "a b c d abcd"],
+    9:["D=AB, E=AC, F=BC", "a b c ab ac bc"],
+    10:["E=AB, F=AC", "a b c d ab ac"],
+    11:["F=ABCDE", "a b c d e abcde"],
+    13:["D=AB, E=AC, F=BC, G=ABC", "a b c ab ac bc abc"],
+    14:["E=AB, F=AC, G=AD", "a b c d ab ac ad"],
+    15:["F=AB, G=AC", "a b c d e ab ac"],
+    16:["G=ABCDEF", "a b c d e f abcdef"],
+    17:["E=AB, F=AC, G=AD, H=BC", "a b c d ab ac ad bc"],
+    18:["F=AB, G=AC, H=AD", "a b c d e ab ac ad"],
+    19:["G=AB, H=AC", "a b c d e f ab ac"],
+    20:["E=AB, F=AC, G=AD, H=BC, I=BD", "a b c d ab ac ad bc bd",],
+    21:["F=AB, G=AC, H=AD, I=AE", "a b c d e ab ac ad ae"],
+    22:["G=AB, H=AC, I=AD", "a b c d e f ab ac ad"],
+    23:["E=AB, F=AC, G=AD, H=BC, I=BD, J=CD", "a b c d ab ac ad bc bd cd"],
+    24:["F=AB, G=AC, H=AD, I=AE, J=BC", "a b c d e ab ac ad ae bc"],
+    25:["G=AB, H=AC, I=AD, J=AE", "a b c d e f ab ac ad ae"],
+    26:["E=AB, F=AC, G=AD, H=BC, I=BD, J=CD, K=ABC", "a b c d ab ac ad bc bd cd abc"],
+    27:["F=AB, G=AC, H=AD, I=AE, J=BC, K=BD", "a b c d e ab ac ad ae bc bd"],
+    28:["G=AB, H=AC, I=AD, J=AE, K=AF", "a b c d e f ab ac ad ae af"],
+    29:["E=AB, F=AC, G=AD, H=BC, I=BD, J=CD, K=ABC, L=ABD", "a b c d ab ac ad bc bd cd abc abd"],
+    30:["F=AB, G=AC, H=AD, I=AE, J=BC, K=BD, L=BE", "a b c d e ab ac ad ae bc bd be"],
+    31:["G=AB, H=AC, I=AD, J=AE, K=AF, L=BC", "a b c d e f ab ac ad ae af bc"]
 }
 
 
@@ -92,4 +90,5 @@ def render():
     ff_editor = st.data_editor(ff_df)
 
     if st.button("Generate Factorial Design"):
-        pass
+        if num_runs_resolution in generator:
+            fract_fact()
