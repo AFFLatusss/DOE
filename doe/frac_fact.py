@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 from pyDOE3 import fracfact, fracfact_by_res
+import numpy as np
 
 options = {1:"2 Factors | 4 runs | Resolution Full",
            2:"3 Factors | 4 runs | Resolution III",
@@ -82,13 +83,26 @@ def render():
         num_replicates = st.number_input("NO. of Replicates", min_value=1, step=1)
 
     num_factors = int(options[num_runs_resolution].split()[0])
+    print(num_factors)
     ff_df = pd.DataFrame({
         "Factor": [f'Factor {i+1}' for i in range(num_factors)],
         "Low": [-1] * num_factors,
         "High": [1] * num_factors,})
     
-    ff_editor = st.data_editor(ff_df)
+    ff_editor = st.data_editor(ff_df, hide_index=True)
 
     if st.button("Generate Factorial Design"):
         if num_runs_resolution in generator:
-            fract_fact()
+            coded_design = fracfact(generator[num_runs_resolution][1])
+            coded = {-1: "Low", 1: "High"}
+
+
+            mapped_design = np.empty_like(coded_design, dtype=object)
+
+            for col_idx in range(num_factors):
+                mapped_design[:, col_idx] = [ff_editor.loc[col_idx,coded[code]] for code in coded_design[:, col_idx]]
+
+            mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
+
+            st.dataframe(mapped_df)
+
