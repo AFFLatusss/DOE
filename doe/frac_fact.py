@@ -1,6 +1,6 @@
 
 import streamlit as st
-
+import pandas as pd
 
 options = {1:"2 Factors | 4 runs | Resolution Full",
            2:"3 Factors | 4 runs | Resolution III",
@@ -71,13 +71,25 @@ generator = {
 def render():
 
     num_runs_resolution = st.selectbox(
-        "Select Number of Runs and Resolution",
+        "Select Number of Factors and Runs",
         options=list(options.keys()),
         format_func=lambda x: options[x]
     )
+    st.markdown(f"**Selected Design:** {num_runs_resolution}")
     col1, col2 = st.columns(2)
 
     with col1:
-        num_factor = st.number_input("NO. of Factors", min_value=2, step=1)
+        num_center_point = st.number_input("No. of Center Points:", min_value=0, step=1)
     with col2:
         num_replicates = st.number_input("NO. of Replicates", min_value=1, step=1)
+
+    num_factors = int(options[num_runs_resolution].split()[0])
+    ff_df = pd.DataFrame({
+        "Factor": [f'Factor {i+1}' for i in range(num_factors)],
+        "Low": [-1] * num_factors,
+        "High": [1] * num_factors,})
+    
+    ff_editor = st.data_editor(ff_df)
+
+    if st.button("Generate Factorial Design"):
+        pass
