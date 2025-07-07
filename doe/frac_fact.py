@@ -1,40 +1,40 @@
 
 import streamlit as st
 import pandas as pd
-from pyDOE3 import fracfact, fracfact_by_res
+from pyDOE3 import ff2n, fracfact
 import numpy as np
 
-options = {1:"2 Factors | 4 runs | Resolution Full",
-           2:"3 Factors | 4 runs | Resolution III",
-           3:"3 Factors | 8 runs | Resolution Full",
-           4:"4 Factors | 8 runs | Resolution IV",
-           5:"4 Factors | 16 runs | Resolution Full",
-           6:"5 Factors | 8 runs | Resolution III",
-           7:"5 Factors | 16 runs | Resolution V",
-           8:"5 Factors | 32 runs | Resolution Full",
-           9:"6 Factors | 8 runs | Resolution III",
-           10:"6 Factors | 16 runs | Resolution IV",
-           11:"6 Factors | 32 runs | Resolution VI",
-           12:"6 Factors | 64 runs | Resolution Full",
-           13:"7 Factors | 8 runs | Resolution III",
-           14:"7 Factors | 16 runs | Resolution IV",
-           15:"7 Factors | 32 runs | Resolution IV",
-           16:"7 Factors | 64 runs | Resolution VII",
-           17:"8 Factors | 16 runs | Resolution IV",
-           18:"8 Factors | 32 runs | Resolution IV",
-           19:"8 Factors | 64 runs | Resolution V",
-           20:"9 Factors | 16 runs | Resolution III",
-           21:"9 Factors | 32 runs | Resolution IV",
-           22:"9 Factors | 64 runs | Resolution IV",
-           23:"10 Factors | 16 runs | Resolution III",
-           24:"10 Factors | 32 runs | Resolution IV",
-           25:"10 Factors | 64 runs | Resolution IV",
-           26:"11 Factors | 16 runs | Resolution III",
-           27:"11 Factors | 32 runs | Resolution IV",
-           28:"11 Factors | 64 runs | Resolution IV",
-           29:"12 Factors | 16 runs | Resolution III",
-           30:"12 Factors | 32 runs | Resolution IV",
-           31:"12 Factors | 64 runs | Resolution IV",}
+options = {1:"🟩 2 Factors | 4 runs | Resolution Full",
+           2:"🟥 3 Factors | 4 runs | Resolution III",
+           3:"🟩 3 Factors | 8 runs | Resolution Full",
+           4:"🟨 4 Factors | 8 runs | Resolution IV",
+           5:"🟩 4 Factors | 16 runs | Resolution Full",
+           6:"🟥 5 Factors | 8 runs | Resolution III",
+           7:"🟩 5 Factors | 16 runs | Resolution V",
+           8:"🟩 5 Factors | 32 runs | Resolution Full",
+           9:"🟥 6 Factors | 8 runs | Resolution III",
+           10:"🟨 6 Factors | 16 runs | Resolution IV",
+           11:"🟩 6 Factors | 32 runs | Resolution VI",
+           12:"🟩 6 Factors | 64 runs | Resolution Full",
+           13:"🟥 7 Factors | 8 runs | Resolution III",
+           14:"🟨 7 Factors | 16 runs | Resolution IV",
+           15:"🟨 7 Factors | 32 runs | Resolution IV",
+           16:"🟩 7 Factors | 64 runs | Resolution VII",
+           17:"🟨 8 Factors | 16 runs | Resolution IV",
+           18:"🟨 8 Factors | 32 runs | Resolution IV",
+           19:"🟩 8 Factors | 64 runs | Resolution V",
+           20:"🟥 9 Factors | 16 runs | Resolution III",
+           21:"🟨 9 Factors | 32 runs | Resolution IV",
+           22:"🟨 9 Factors | 64 runs | Resolution IV",
+           23:"🟥 10 Factors | 16 runs | Resolution III",
+           24:"🟨 10 Factors | 32 runs | Resolution IV",
+           25:"🟨 10 Factors | 64 runs | Resolution IV",
+           26:"🟥 11 Factors | 16 runs | Resolution III",
+           27:"🟨 11 Factors | 32 runs | Resolution IV",
+           28:"🟨 11 Factors | 64 runs | Resolution IV",
+           29:"🟥 12 Factors | 16 runs | Resolution III",
+           30:"🟨 12 Factors | 32 runs | Resolution IV",
+           31:"🟨 12 Factors | 64 runs | Resolution IV",}
 
 generator = {
     2:["C=AB", "a b ab"],
@@ -82,27 +82,31 @@ def render():
     with col2:
         num_replicates = st.number_input("NO. of Replicates", min_value=1, step=1)
 
-    num_factors = int(options[num_runs_resolution].split()[0])
+    num_factors = int(options[num_runs_resolution].split()[1])
     print(num_factors)
     ff_df = pd.DataFrame({
         "Factor": [f'Factor {i+1}' for i in range(num_factors)],
-        "Low": [-1] * num_factors,
-        "High": [1] * num_factors,})
+        "Low": [-1.0] * num_factors,
+        "High": [1.0] * num_factors,})
     
     ff_editor = st.data_editor(ff_df, hide_index=True)
 
     if st.button("Generate Factorial Design"):
         if num_runs_resolution in generator:
             coded_design = fracfact(generator[num_runs_resolution][1])
-            coded = {-1: "Low", 1: "High"}
+            
+        else:
+            coded_design = ff2n(num_factors)
 
 
-            mapped_design = np.empty_like(coded_design, dtype=object)
+        coded = {-1: "Low", 1: "High"}
+        mapped_design = np.empty_like(coded_design, dtype=object)
 
-            for col_idx in range(num_factors):
-                mapped_design[:, col_idx] = [ff_editor.loc[col_idx,coded[code]] for code in coded_design[:, col_idx]]
+        for col_idx in range(num_factors):
+            mapped_design[:, col_idx] = [ff_editor.loc[col_idx,coded[code]] for code in coded_design[:, col_idx]]
 
-            mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
+        mapped_df = pd.DataFrame(mapped_design, columns=ff_editor["Factor"].tolist())
 
-            st.dataframe(mapped_df)
+        st.dataframe(mapped_df)
+
 
