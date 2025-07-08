@@ -123,6 +123,8 @@ def render():
                 coded_design = extreme_vertices_design(mins, maxs)
             st.subheader("📋 Design Points")
             
-        
+            if num_replicates > 1:
+                coded_design = pd.concat([coded_design] * num_replicates, ignore_index=True)
+                
             st.dataframe(coded_design)
 
