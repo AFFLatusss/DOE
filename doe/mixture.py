@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import itertools
 import numpy as np
-
+from pypoman import compute_polytope_vertices
 
 
     # -----------------------
@@ -28,6 +28,47 @@ def generate_simplex_lattice(k, m):
     grid = list(itertools.product(levels, repeat=k))  # All combinations
     valid_points = [pt for pt in grid if abs(sum(pt) - 1.0) < 1e-6]  # Keep only those summing to 1
     return valid_points
+
+def extreme_vertices_design(mins, maxs):
+    """
+    Compute the exact extreme vertices (corner points) of a mixture region defined by:
+      L_i ≤ x_i ≤ U_i  for i=1..k
+      sum(x_i) = 1
+
+    Returns a DataFrame of all extreme vertices.
+    """
+    mins = np.asarray(mins, dtype=float)
+    maxs = np.asarray(maxs, dtype=float)
+    k = len(mins)
+    assert len(maxs) == k, "mins and maxs must have same length"
+
+    # Build inequality system A x <= b
+    # 1) Bounds: x_i <= U_i     →  A row: e_i,   b: U_i
+    #            -x_i <= -L_i    →  A row: -e_i,  b: -L_i
+    # 2) Sum constraint: sum x_i <= 1
+    #            -sum x_i <= -1
+    A = []
+    b = []
+
+    # bounds
+    for i in range(k):
+        e = np.zeros(k)
+        e[i] = 1.0
+        A.append(e.copy());    b.append(maxs[i])
+        A.append(-e.copy());   b.append(-mins[i])
+
+    # mixture sum == 1
+    A.append(np.ones(k));  b.append(1.0)
+    A.append(-np.ones(k)); b.append(-1.0)
+
+    # enumerate vertices
+    verts = compute_polytope_vertices(np.array(A), np.array(b))
+
+    # round small numerical noise
+    verts = np.unique(np.round(verts, 8), axis=0)
+
+    return pd.DataFrame(verts, columns=[f"x{i+1}" for i in range(k)])
+
 
 def render():
 
@@ -67,31 +108,16 @@ def render():
         ff_editor = st.data_editor(ff_df, hide_index=True)
 
 
-
-        component_names = [f"Factor {i+1}" for i in range(num_factor)]
-
-
-
-        # ---------------------
-        # Simplex-Lattice Design
-        # ---------------------
-        def generate_lattice_design(n, m):
-            """Generates a simplex-lattice design"""
-            levels = [i/m for i in range(m+1)]
-            grid = list(itertools.product(levels, repeat=n))
-            grid = [pt for pt in grid if abs(sum(pt) - 1.0) < 1e-6]
-            return pd.DataFrame(grid, columns=component_names)
-
         # -----------------------
         # Generate Design
         # -----------------------
         if selection[0] == "Simplex-Centroid":
-            design_df = generate_simplex_centroid(num_factor)
+            coded_design = generate_simplex_centroid(num_factor)
         elif selection[0] == "Simplex-Lattice":
-            design_df = generate_lattice_design(num_factor, lattice_degree)
+            coded_design = generate_simplex_lattice(num_factor, lattice_degree)
         elif selection[0] == "Extreme-Vertices":
             pass
 
         st.subheader("📋 Design Points")
-        st.dataframe(design_df)
+        st.dataframe(coded_design)
 
