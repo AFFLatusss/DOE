@@ -37,6 +37,7 @@ def extreme_vertices_design(mins, maxs):
 
     Returns a DataFrame of all extreme vertices.
     """
+    print(mins, maxs)
     mins = np.asarray(mins, dtype=float)
     maxs = np.asarray(maxs, dtype=float)
     k = len(mins)
@@ -66,7 +67,7 @@ def extreme_vertices_design(mins, maxs):
 
     # round small numerical noise
     verts = np.unique(np.round(verts, 8), axis=0)
-
+    print("in function")
     return pd.DataFrame(verts, columns=[f"x{i+1}" for i in range(k)])
 
 
@@ -78,7 +79,7 @@ def render():
     st.markdown(f"Your selected options: {selection}.")
 
     if selection:
-        selected = selection[0]
+        selected = selection
 
         # Determine how many columns you want based on the selected design
         num_cols = 5 if selected == "Simplex-Lattice" else 4
@@ -101,23 +102,27 @@ def render():
 
         ff_df = pd.DataFrame({
             "Factor": [f'Factor {i+1}' for i in range(num_factor)],
-            "Lower Bounds": [-1] * num_factor,
-            "High Bounds": [1] * num_factor,
+            "Lower Bounds": [0.0] * num_factor,
+            "High Bounds": [1.0] * num_factor,
             })
     
         ff_editor = st.data_editor(ff_df, hide_index=True)
 
-
+      
         # -----------------------
         # Generate Design
         # -----------------------
-        if selection[0] == "Simplex-Centroid":
-            coded_design = generate_simplex_centroid(num_factor)
-        elif selection[0] == "Simplex-Lattice":
-            coded_design = generate_simplex_lattice(num_factor, lattice_degree)
-        elif selection[0] == "Extreme-Vertices":
-            pass
-
-        st.subheader("📋 Design Points")
-        st.dataframe(coded_design)
+        if st.button("Generate Design"):
+            if selected == "Simplex-Centroid":
+                coded_design = generate_simplex_centroid(num_factor)
+            elif selected == "Simplex-Lattice":
+                coded_design = generate_simplex_lattice(num_factor, lattice_degree)
+            elif selected == "Extreme-Vertices":
+                mins = ff_editor["Lower Bounds"].tolist()
+                maxs = ff_editor["High Bounds"].tolist()
+                coded_design = extreme_vertices_design(mins, maxs)
+            st.subheader("📋 Design Points")
+            
+        
+            st.dataframe(coded_design)
 
